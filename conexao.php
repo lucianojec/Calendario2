@@ -1,7 +1,7 @@
 <?php
 	$servidor = "localhost";
 	$usuario = "root";
-	$senha = "softplan2019";
+	$senha = "";
 	$dbname = "celke";
 	
 	//Criar a conexao

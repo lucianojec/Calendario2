@@ -23,15 +23,17 @@ $resultado_events = mysqli_query($conn, $result_events);
 		<script>
 			$(document).ready(function() {
 				$('#calendar').fullCalendar({
-					plugins: ['interaction', 'dayGrid',  'timeGrid', 'list'],
+					plugins: ['interaction', 'dayGrid',  'timeGrid', 'listWeek'],
 					header: {
 						left: 'prev,next today',
 						center: 'title',
-						right: 'dayGridMonth'
+						right: 'month,agendaWeek,agendaDay,listWeek'
 					},					
 					defaultDate: Date(),
 					navLinks: true, // can click day/week names to navigate views
 					editable: false,
+					eventLimit: true,
+					events: 'list_eventos.php',
 
 					//permite selecionar a grid do dia atual até o 3 dia para frente
 					selectConstraint: {
@@ -43,11 +45,11 @@ $resultado_events = mysqli_query($conn, $result_events);
 					settimana: {
 						type: 'agendaWeek',
 						duration: {
-							days: 1
+							days: 7
 						},
 						title: 'Apertura',
 						columnFormat: 'dddd', // Format the day to only show like 'Monday'
-						hiddenDays: [0, 6] // Hide Sunday and Saturday?
+						// hiddenDays: [0, 0] // Hide Sunday and Saturday?
 					}
 				},
 				defaultView: 'settimana',
