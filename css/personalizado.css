@@ -17,3 +17,9 @@ body {
 .form{
 	display: none;
 }
+
+#saudacao {
+    color: rgb(196, 211, 255);
+    font-family: Arial;
+    font-size: 20px;
+}

@@ -1,7 +1,7 @@
 <?php
 
 include 'conexao.php';
-$query_events = "SELECT id, title, color, start, end FROM events";
+$query_events = "SELECT id, title, color, start, end FROM events where title = " + $_SESSION["username"];
 $resultado_events = $conn->prepare($query_events);
 $resultado_events->execute();
 $eventos = [];
