@@ -1,11 +1,13 @@
 		<?php
 		session_start();
 		include_once("conexao.php");
-
 		
 		// $sqlLogon = "SELECT uni_codigo, esp_codigo FROM logon WHERE id_login = '" . $_SESSION['usr_codigo'] . "' ORDER BY id DESC LIMIT 1";
 		@$result_events = "SELECT id, title, color, start, end FROM events where title = '" . $_SESSION['username'] . "' ";
 		$resultado_events = mysqli_query($conn, @$result_events);
+		@$result_Hour_Avaliable = "SELECT id, `start`, `end` FROM events where `start` >= now()";
+		$resultado__Hour_Avaliable = mysqli_query($conn, @$result_Hour_Avaliable);
+
 		?>
 		<!DOCTYPE html>
 		<html lang='pt-br'>
@@ -39,11 +41,16 @@
 							events: 'list_eventos.php',
 							timeFormat:'HH:mm',
 
+							//retirada a regra
 							//permite selecionar a grid do dia atual até o 3 dia para frente
 							selectConstraint: {
-								start: $.fullCalendar.moment().subtract(1, 'hour'),
-								end: $.fullCalendar.moment().startOf('now').add(4, 'day')
+								start: $.fullCalendar.moment().subtract(0, 'hour'),
+								end: $.fullCalendar.moment().startOf('now').add(45, 'day')
 							},
+
+							validRange:{
+								start: new Date().toISOString().substring(0,10)
+								},
 							
 							views: {
 							settimana: {
@@ -60,17 +67,15 @@
 
 						eventLimit: true, // allow 'more' link when too many events
 
-						
-
 						eventClick: function(event) {						
 							$('#visualizar #id').text(event.id);
 							$('#visualizar #id').val(event.id);
 							$('#visualizar #title').text(event.title);
 							$('#visualizar #title').val(event.title);
-							$('#visualizar #start').text(event.start.format('DD/MM/YYYY HH:mm:ss'));
-							$('#visualizar #start').val(event.start.format('DD/MM/YYYY HH:mm:ss'));
-							$('#visualizar #end').text(event.end.format('DD/MM/YYYY HH:mm:ss'));
-							$('#visualizar #end').val(event.end.format('DD/MM/YYYY HH:mm:ss'));
+							$('#visualizar #start').text(event.start.format('DD/MM/YYYY HH:mm'));
+							$('#visualizar #start').val(event.start.format('DD/MM/YYYY HH:mm'));
+							$('#visualizar #end').text(event.end.format('DD/MM/YYYY HH:mm'));
+							$('#visualizar #end').val(event.end.format('DD/MM/YYYY HH:mm'));
 							$('#visualizar #color').val(event.color);
 							$('#visualizar').modal('show');
 							return false;
@@ -79,8 +84,8 @@
 							selectable: true,
 							selectHelper: true,
 							select: function(start, end){
-								$('#cadastrar #start').val(moment(start).format('DD/MM/YYYY HH:mm:ss'));
-								$('#cadastrar #end').val(moment(end).format('DD/MM/YYYY HH:mm:ss'));
+								$('#cadastrar #start').val(moment(start).format('DD/MM/YYYY HH:mm'));
+								$('#cadastrar #end').val(moment(end).format('DD/MM/YYYY HH:mm'));
 								$('#cadastrar').modal('show');						
 							},
 							events: [
@@ -88,23 +93,23 @@
 									while($row_events = mysqli_fetch_array($resultado_events)){
 										?>
 										{
-										id: '<?php echo $row_events['id']; ?>',
-										title: '<?php echo $row_events['title']; ?>',
-										start: '<?php echo $row_events['start']; ?>',
-										end: '<?php echo $row_events['end']; ?>',
-										color: '<?php echo $row_events['color']; ?>',
+											id: '<?php echo $row_events['id']; ?>',
+											title: '<?php echo $row_events['title']; ?>',
+											start: '<?php echo $row_events['start']; ?>',
+											end: '<?php echo $row_events['end']; ?>',
+											color: '<?php echo $row_events['color']; ?>',
 										},<?php
 									}
 								?>
 							]
 						});
 					});
-					
+
 					//Mascara para o campo data e hora
 					function DataHora(evento, objeto){
 						var keypress=(window.event)?event.keyCode:evento.which;
 						campo = eval (objeto);
-						if (campo.value == '00/00/0000 00:00:00'){
+						if (campo.value == '00/00/0000 00:00'){
 							campo.value=""
 						}
 					
@@ -117,7 +122,7 @@
 						conjunto3 = 10;
 						conjunto4 = 13;
 						conjunto5 = 16;
-						if ((caracteres.search(String.fromCharCode (keypress))!=-1) && campo.value.length < (19)){
+						if ((caracteres.search(String.fromCharCode (keypress))!=-1) && campo.value.length < (16)){
 							if (campo.value.length == conjunto1 )
 							campo.value = campo.value + separacao1;
 							else if (campo.value.length == conjunto2)
@@ -130,6 +135,21 @@
 							campo.value = campo.value + separacao3;
 						}else{
 							event.returnValue = false;
+						}
+					}
+				</script>
+
+				<script type="text/javascript">
+					function validar()
+					{
+						var start = form-group.start.value;
+						var end = form-group.end.value;
+						var periodo = end - start;
+						
+						if(periodo > 2 )
+						{
+							alert('O tempo de agendamento não pode ser superior a 02 horas!');
+							return false;
 						}
 					}
 				</script>
@@ -146,12 +166,25 @@
 					<div style="margin-right: right; text-align: right;" id="saudacao">					
 					<span class="border">
 						<?php 
-							echo "Bem-vindo ".$_SESSION['username'];  
+							echo "Bem-vindo ".$_SESSION['username'];
+							
 						?>
 						</span>
 					</div><br>
-				
-					<div id='calendar'></div>			
+					
+					<div style="margin-right: right; text-align: right;" id="saudacao">					
+					<span class="border">
+						<?php 
+							echo '<a href="doLogout.php?token='.md5(session_id()).'">Sair</a>';
+							// sim, MD5 é seguro suficiente nesse contexto (e é apenas exemplo).
+							
+						?>
+						</span>
+					</div><br>
+
+					
+
+					<div id='calendar'></div>
 				</div>
 
 				<div class="modal fade" id="visualizar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-backdrop="static">
@@ -159,7 +192,7 @@
 						<div class="modal-content">
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-								<h4 class="modal-title text-center">Dados do Agendamernto</h4>
+								<h4 class="modal-title text-center">Dados do Agendamento</h4>
 							</div>
 							<div class="modal-body">
 								<div class="visualizar">
@@ -220,7 +253,8 @@
 						<div class="modal-content">
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-								<h4 class="modal-title text-center">Agendar</h4>
+								<h4 class="modal-title text-center">Agendar</h4></br>
+								<h6 class="modal-title text-center">O período máximo de agendamento é de 02 horas!</h6>
 							</div>
 							<div class="modal-body">
 								<form class="form-horizontal" method="POST" action="proc_cad_evento.php">
@@ -237,7 +271,6 @@
 										</div>
 									</div>
 
-
 									<div class="form-group">
 										<label for="inputEmail3" class="col-sm-2 control-label">Data Final</label>
 										<div class="col-sm-10">
@@ -246,7 +279,7 @@
 									</div>
 									<div class="form-group">
 										<div class="col-sm-offset-2 col-sm-10">
-											<button type="submit" class="btn btn-success">Cadastrar</button>
+											<button type="submit" onclick="return validar()" class="btn btn-success">Cadastrar</button>
 										</div>
 										</div>
 									</div>
@@ -255,7 +288,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<script>
 					$('.btn-canc-vis').on("click", function() {
 						$('.form').slideToggle();
